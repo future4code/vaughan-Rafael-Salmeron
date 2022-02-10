@@ -1,44 +1,36 @@
-import React from "react";
+import { useEffect, useState } from "react";
 import "./index.css";
 import axios from "axios";
 import PokeCard from "./components/PokeCard/PokeCard";
 
-class App extends React.Component {
-  state = {
-    // lista de pokemons que está sendo guardada no estado
-    pokeList: [],
-    // nome do pokemon guardado no estado, assim que o usuário
-    // escolhe um nome no dropdown
-    pokeName: ""
-  };
-
+export default function App() {
+  const [pokeList, setPokeList] = useState([]);
+  const [pokeName, setPokeName] = useState("");
   // método que roda após a montagem do componente
-  componentDidMount = () => {
+  const pegarPersonagens = () => {
     // função axios que está batendo na API e buscando 151 pokemons
     axios
       .get("https://pokeapi.co/api/v2/pokemon/?limit=151")
       .then(response => {
         // função que está setando no estado os 151 pokemons
-        this.setState({ pokeList: response.data.results });
+        setPokeList(response.data.results);
       })
       .catch(err => {
         console.log(err);
       });
   };
+  useEffect(() => {
+    pegarPersonagens(pokeList);
+  }, []);
 
-  changePokeName = event => {
-    this.setState({ pokeName: event.target.value });
-  };
-
-  render() {
     return (
       <div className="App">
         {/* evento onChange chama função toda vez que o usuário 
         escolhe um novo pokemon no dropdown */}
-        <select onChange={this.changePokeName}>
+        <select onChange={pegarPersonagens}>
           <option value={""}>Nenhum</option>
           {/* renderizando a lista de pokemons como opções do select */}
-          {this.state.pokeList.map(pokemon => {
+          {pokeList.map(pokemon => {
             return (
               <option key={pokemon.name} value={pokemon.name}>
                 {pokemon.name}
@@ -48,10 +40,9 @@ class App extends React.Component {
         </select>
         {/* expressão booleana que renderiza o componente PokeCard,
         caso o valor de pokeName, no estado, seja true */}
-        {this.state.pokeName && <PokeCard pokemon={this.state.pokeName} />}
+        {pokeName && <PokeCard pokemon={pokeName} />}
       </div>
     );
-  }
 }
 
-export default App;
+
