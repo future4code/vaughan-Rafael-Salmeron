@@ -1,48 +1,74 @@
 import { useEffect, useState } from "react";
 import "./index.css";
+import PokemonTry from "./components/PokeCard/PokemonTry";
 import axios from "axios";
 import PokeCard from "./components/PokeCard/PokeCard";
 
-export default function App() {
-  const [pokeList, setPokeList] = useState([]);
-  const [pokeName, setPokeName] = useState("");
+
+
+function App() {
+  const [allPokemons, setAllPokemons] = useState([]);
+  const [loadMore, setLoadMore] = useState();
   // método que roda após a montagem do componente
-  const pegarPersonagens = () => {
-    // função axios que está batendo na API e buscando 151 pokemons
-    axios
-      .get("https://pokeapi.co/api/v2/pokemon/?limit=151")
-      .then(response => {
-        // função que está setando no estado os 151 pokemons
-        setPokeList(response.data.results);
-      })
-      .catch(err => {
-        console.log(err);
-      });
-  };
+  
+  
+  const getAllpokemons = async () => {
+    await axios.get("https://pokeapi.co/api/v2/pokemon/?limit=20")
+    // const data = await res.json()
+    .then((res) => {
+      setAllPokemons(res.data.results)
+      console.log(res.data.results)
+    })
+    .catch((err) => {
+      console.log(err.message)
+    })
+    
+
+    // function createPokemonObject (result) {
+    //   result.forEach( async (pokemon) => {
+    //     const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemon.name}`)
+    //     const data = await res.json()
+
+    //     setAllPokemons(currentList => [...currentList, data])
+        
+    //   })
+    // }
+    // createPokemonObject(data.result)
+    // await console.log(data.result)
+  }
+  
   useEffect(() => {
-    pegarPersonagens(pokeList);
-  }, []);
+    getAllpokemons()
+  }, [])
 
     return (
       <div className="App">
-        {/* evento onChange chama função toda vez que o usuário 
-        escolhe um novo pokemon no dropdown */}
-        <select onChange={pegarPersonagens}>
-          <option value={""}>Nenhum</option>
-          {/* renderizando a lista de pokemons como opções do select */}
-          {pokeList.map(pokemon => {
-            return (
-              <option key={pokemon.name} value={pokemon.name}>
-                {pokemon.name}
-              </option>
-            );
-          })}
-        </select>
-        {/* expressão booleana que renderiza o componente PokeCard,
-        caso o valor de pokeName, no estado, seja true */}
-        {pokeName && <PokeCard pokemon={pokeName} />}
+        <h1>Pokemons</h1>
+        <div>
+          <div className="grid">
+            { allPokemons.map((pokemon, index) => 
+              <PokeCard
+                pokemon={pokemon.name}
+              />
+              // <li>
+              //   {allPokemons}
+              // </li>
+              // <PokemonTry
+              // id={pokemon.id}
+              // name={pokemon.name}
+              // image={pokemon.sprites.other.dream_world.front_default}
+              // type={pokemon.types[0].type.name}
+              // key={index}
+              // />
+              )}
+              <button>Load More</button>
+          </div>
+        </div>
+
       </div>
     );
 }
+
+export default App
 
 
