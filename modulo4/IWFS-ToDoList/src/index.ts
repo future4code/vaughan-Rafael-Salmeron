@@ -16,7 +16,7 @@ const server = app.listen(process.env.PORT || 3003, () => {
     }
 });
 // FUNCTIONS
-const getActorById = async (id: string): Promise<any> => {
+const getUserById = async (id: String): Promise<any> => {
    const result = await connection.queryBuilder()
       .select("*")
       .from("userToDo")
@@ -39,8 +39,8 @@ app.get("/user", async (req: Request, res: Response): Promise<void> =>{
 app.get("/user/:id", async (req: Request, res: Response): Promise<void> =>{
    try {
        const id = req.params.id
-       const user = await getActorById(id)
-       res.status(200).send({users: user})
+       const user = await getUserById(id)
+       res.status(200).send(user)
    } catch (error:any) {
        res.status(500).send(error.sqlMessage || error.message)
    }
@@ -48,27 +48,49 @@ app.get("/user/:id", async (req: Request, res: Response): Promise<void> =>{
 
 // CREATE USER
 app.post("/user", async(req : Request, res : Response): Promise<void> => {
-   try{ 
+   try{
+      const email = validateEmail(req.body.email)
       await insertUser(
            req.body.name,
            req.body.nickname,
-           req.body.email
-       )
+           email
+           )
+           console.log(email)
        res.status(201).send("User Created")
    }catch(err:any){
        res.status(500).send(err.sqlMessage || err.message)
    }
 })
+// ALTER USER
+app.put("/user", async(req : Request, res : Response): Promise<void> => {
+   try{
+      const id = req.query.id as string
+      const email = validateEmail(req.body.email)
+      const user = await getUserById(id)
+      await insertUser(
+           req.body.name,
+           req.body.nickname,
+           email
+           )
+           console.log(email)
+       res.status(201).send(user)
+   }catch(err:any){
+       res.status(500).send(err.sqlMessage || err.message)
+   }
+})
 
-const validateEmail = (email: any) => {
-   var re = /\S+@\S+\.\S+/;
-   return re.test(email);
+function validateEmail(email: any) {
+   var re = /\S+@\S+\.\S+/
+   if (re.test(email)===true){
+      return email
+   }
  }
+
 // INSERT USER
 const insertUser =  async(
    name: string,
    nickname: string,
-   email: string,
+   email: string | undefined
 ): Promise<void> =>{
    await connection("userToDo")
       .insert(
